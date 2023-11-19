@@ -1,23 +1,74 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.8.34309.116
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "GESTION DE INVENTARIO PROYECTO", "GESTION DE INVENTARIO PROYECTO\GESTION DE INVENTARIO PROYECTO.pyproj", "{EB835A21-0569-44D5-98E3-EA74CD3BEF18}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{EB835A21-0569-44D5-98E3-EA74CD3BEF18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EB835A21-0569-44D5-98E3-EA74CD3BEF18}.Release|Any CPU.ActiveCfg = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {F3400FFB-39AA-4EF9-A673-75D821704C0E}
-	EndGlobalSection
-EndGlobal
+import tkinter as tk
+from tkinter import ttk
+
+class GestorInventario:
+    def __init__(self):
+        self.inventario = {}
+
+    def agregar_articulo(self, articulo, cantidad, cos_un):
+        if articulo in self.inventario:
+            self.inventario[articulo]['cantidad'] += cantidad
+        else:
+            self.inventario[articulo] = {'cantidad': cantidad, 'costo_unitario': cos_un}
+
+    def eliminar(self, articulo, cantidad):
+        if articulo in self.inventario:
+            if cantidad >= self.inventario[articulo]['cantidad']:
+                del self.inventario[articulo]
+            else:
+                self.inventario[articulo]['cantidad'] -= cantidad
+        else:
+            print(f"{articulo} no encontrado en el inventario.")
+
+    def mostrar_inventario(self):
+        for articulo, info in self.inventario.items():
+            print(f"{articulo}: Cantidad - {info['cantidad']}, Costo Unitario - {info['costo_unitario']}")
+
+class GUI(tk.Tk):
+    def __init__(self):
+        super().__init__()
+
+        self.title("Gestor de Inventario")
+        self.geometry("400x300")
+
+        self.gestor_inventario = GestorInventario()
+
+        # Interfaz gráfica
+        ttk.Label(self, text="Artículo:").pack(pady=5)
+        self.articulo_entry = ttk.Entry(self)
+        self.articulo_entry.pack(pady=5)
+
+        ttk.Label(self, text="Cantidad:").pack(pady=5)
+        self.cantidad_entry = ttk.Entry(self)
+        self.cantidad_entry.pack(pady=5)
+
+        ttk.Label(self, text="Costo Unitario:").pack(pady=5)
+        self.cos_un_entry = ttk.Entry(self)
+        self.cos_un_entry.pack(pady=5)
+
+        ttk.Button(self, text="Agregar Artículo", command=self.agregar_articulo).pack(pady=10)
+        ttk.Button(self, text="Mostrar Inventario", command=self.mostrar_inventario).pack(pady=10)
+
+    def agregar_articulo(self):
+        articulo = self.articulo_entry.get()
+        cantidad = int(self.cantidad_entry.get())
+        cos_un = float(self.cos_un_entry.get())
+
+        self.gestor_inventario.agregar_articulo(articulo, cantidad, cos_un)
+
+        # Limpiar los campos de entrada después de agregar
+        self.articulo_entry.delete(0, tk.END)
+        self.cantidad_entry.delete(0, tk.END)
+        self.cos_un_entry.delete(0, tk.END)
+
+    def mostrar_inventario(self):
+        print("Inventario:")
+        self.gestor_inventario.mostrar_inventario()
+
+
+def new_func(app):
+    app.mainloop()
+
+if __name__ == "__main__":
+    app = GUI()
+    new_func(app)
