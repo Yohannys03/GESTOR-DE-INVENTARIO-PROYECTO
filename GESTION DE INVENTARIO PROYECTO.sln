@@ -1,74 +1,53 @@
-import tkinter as tk
-from tkinter import ttk
+import numpy as np
+import random
+import plotly.graph_objects as go
+from tkinter import *
 
-class GestorInventario:
-    def __init__(self):
-        self.inventario = {}
+def pronostico_demanda(demanda_actual, capacidad, tasa_demanda, diferencia_pronosticos):
+    # Inicializar la variable demanda_prevista
+    demanda_prevista = [demanda_actual]
 
-    def agregar_articulo(self, articulo, cantidad, cos_un):
-        if articulo in self.inventario:
-            self.inventario[articulo]['cantidad'] += cantidad
-        else:
-            self.inventario[articulo] = {'cantidad': cantidad, 'costo_unitario': cos_un}
+    # Iterar sobre los valores de tiempo
+    for i in range(1, 100):
+        # Actualizar la demanda prevista
+        demanda_prevista.append(demanda_prevista[-1] + tasa_demanda * (capacidad - demanda_prevista[-1]))
 
-    def eliminar(self, articulo, cantidad):
-        if articulo in self.inventario:
-            if cantidad >= self.inventario[articulo]['cantidad']:
-                del self.inventario[articulo]
-            else:
-                self.inventario[articulo]['cantidad'] -= cantidad
-        else:
-            print(f"{articulo} no encontrado en el inventario.")
+    # Devolver la lista de demandas previstas
+    return demanda_prevista
 
-    def mostrar_inventario(self):
-        for articulo, info in self.inventario.items():
-            print(f"{articulo}: Cantidad - {info['cantidad']}, Costo Unitario - {info['costo_unitario']}")
+def generar_grafica():
+    # Inicializar las variables pronostico_final y pronostico_inicial
+    pronostico_final = None
+    pronostico_inicial = None
 
-class GUI(tk.Tk):
-    def __init__(self):
-        super().__init__()
+    # Solicitar al usuario que ingrese los valores de pronostico_final y pronostico_inicial
+    pronostico_final = float(input("Ingrese el pronóstico final: "))
+    pronostico_inicial = float(input("Ingrese el pronóstico inicial: "))
 
-        self.title("Gestor de Inventario")
-        self.geometry("400x300")
+    # Generar datos aleatorios para la demanda actual y capacidad
+    demanda_actual = random.uniform(50, 150)
+    capacidad = random.uniform(150, 300)
 
-        self.gestor_inventario = GestorInventario()
+    # Ajustar
+    tasa_demanda = 0.08
 
-        # Interfaz gráfica
-        ttk.Label(self, text="Artículo:").pack(pady=5)
-        self.articulo_entry = ttk.Entry(self)
-        self.articulo_entry.pack(pady=5)
+    # Calcular la demanda prevista utilizando la función pronostico_demanda
+    demandas_previstas = pronostico_demanda(demanda_actual, capacidad, tasa_demanda, pronostico_final - pronostico_inicial)
 
-        ttk.Label(self, text="Cantidad:").pack(pady=5)
-        self.cantidad_entry = ttk.Entry(self)
-        self.cantidad_entry.pack(pady=5)
+    # Crear y mostrar la gráfica
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=np.linspace(pronostico_inicial, pronostico_final, 100), y=demandas_previstas, name='Demanda Prevista'))
+    fig.update_layout(title='Demanda Prevista con Ecuación Diferencial', xaxis_title='Tiempo', yaxis_title='Demanda Prevista')
+    fig.show()
 
-        ttk.Label(self, text="Costo Unitario:").pack(pady=5)
-        self.cos_un_entry = ttk.Entry(self)
-        self.cos_un_entry.pack(pady=5)
+# Crear la ventana principal
+root = Tk()
+root.title('Generador de Gráfica de Demanda Prevista')
 
-        ttk.Button(self, text="Agregar Artículo", command=self.agregar_articulo).pack(pady=10)
-        ttk.Button(self, text="Mostrar Inventario", command=self.mostrar_inventario).pack(pady=10)
+# Crear los botones
+Button(root, text="Generar Gráfica", command=generar_grafica, height=3, width=20).place(x=250, y=130)
 
-    def agregar_articulo(self):
-        articulo = self.articulo_entry.get()
-        cantidad = int(self.cantidad_entry.get())
-        cos_un = float(self.cos_un_entry.get())
-
-        self.gestor_inventario.agregar_articulo(articulo, cantidad, cos_un)
-
-        # Limpiar los campos de entrada después de agregar
-        self.articulo_entry.delete(0, tk.END)
-        self.cantidad_entry.delete(0, tk.END)
-        self.cos_un_entry.delete(0, tk.END)
-
-    def mostrar_inventario(self):
-        print("Inventario:")
-        self.gestor_inventario.mostrar_inventario()
+# Iniciar la ventana
+root.mainloop()
 
 
-def new_func(app):
-    app.mainloop()
-
-if __name__ == "__main__":
-    app = GUI()
-    new_func(app)
